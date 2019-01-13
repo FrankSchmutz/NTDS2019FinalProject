@@ -44,6 +44,8 @@ class Map {
     this.main_data = []
   }
 
+  // used to display airports as circles (needs modification, e.g. different colors for different types or airports)
+  // may also need another function to display routes between airports
   display_data(data) {
 
     this.main_data = data
@@ -139,6 +141,7 @@ whenDocumentLoaded(() => {
 
   let data = [];
 
+  // insert data path here (maybe need to load multiple csv files so modify accordingly)
   d3.csv("", function(csv) {
 
     })
