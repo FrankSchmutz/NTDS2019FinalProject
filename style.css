@@ -57,7 +57,7 @@ body {
     height: 50px;
 }
 
-#header a {
+#header p {
 	float: left;
 	color: rgb(250, 250, 250);
 	text-align: center;
@@ -67,17 +67,6 @@ body {
 	line-height: 25px;
 	border-radius: 4px;
 	margin: 0 0 0px;
-}
-
-#header .to_explo:hover {
-  background-color: rgb(70, 70, 70);
-  color: rgb(250, 250, 250);
-  text-decoration: none;
-}
-
-
-#header .header-right {
-  float: right;
 }
 
 #map {
