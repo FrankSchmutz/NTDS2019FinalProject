@@ -15,13 +15,19 @@ function whenDocumentLoaded(action) {
   }
 }
 
+// function updateData(map, path_to_data) {
+//   let data = []
+//   d3.csv(path_to_data, function(csv) {
+//     })
+//     .then(() => {
+//       map.display_data(data)
+//     });
+// }
+
 function updateData(map, path_to_data) {
-  let data = []
-  d3.csv(path_to_data, function(csv) {
-    })
-    .then(() => {
-      map.display_data(data)
-    });
+  d3.csv(path_to_data).then(function(data) {
+    map.display_data(data)
+  });
 }
 
 class Map {
@@ -51,19 +57,53 @@ class Map {
     this.main_data = data
 
     const context = this;
-
+    
     let dataPoints = this.circles.selectAll('circle').data(data, d => d);
+
+
 
     dataPoints
       .enter().append('circle')
       .attr('cx', d => context.projection([d.lon, d.lat])[0])
       .attr('cy', d => context.projection([d.lon, d.lat])[1])
-      .attr('r', d => 0.1)
+      .attr('r', d => 2)
       .attr('transform', context.transform)
       .attr('opacity', 0)
+      .on("click", function(d){
+        console.log("clickclickclickclickclickclick")
+      })
+      .on("mouseover", function(d){
+        console.log(d.IATA, d.country)
+      })
+      .on("mouseout", function(d){
+        console.log("leave")
+      })
+      .attr('fill',function(d){
+        switch(d.continent) {
+          case "Europe":
+            return "orange"
+          case "North America":
+            return "skyblue"
+          case "South America":
+            return "lightyellow"
+          case "Asia":
+            return "white"
+          case "Antactica":
+            return "white"
+          case "Oceania":
+            return "red"
+          case "Africa":
+            return "lime"
+          default:
+            "grey"
+        }
+        return "yellow"
+      })
       .transition()
       .duration(1000)
-      .attr('opacity', 1);
+      .attr('opacity', 1)
+
+      
 
     dataPoints
       .transition()
@@ -140,11 +180,14 @@ whenDocumentLoaded(() => {
   const background = d3.json('https://unpkg.com/world-atlas@1.1.4/world/110m.json');
 
   let data = [];
+  
+  updateData(map, "./data/airports.csv")
+
 
   // insert data path here (maybe need to load multiple csv files so modify accordingly)
-  d3.csv("", function(csv) {
+  d3.csv("", function(data) {
 
-    })
+  })
     .then(() => {
       background.then(world => {
         map.land.append('path')
@@ -173,7 +216,7 @@ whenDocumentLoaded(() => {
         coord = map.projection.invert(coord)
 
         let keys = Object.keys(countries)
-
+        
         let box = d3.select('#mouse_region')
         let on_valid_region = false
 
