@@ -15,20 +15,26 @@ function whenDocumentLoaded(action) {
   }
 }
 
+function updateData(map, path_to_data) {
+  let data = []
+  d3.csv(path_to_data, function(csv) {
+    let json_obj = csv
+    data.push(json_obj)
+    })
+    .then(() => {
+      map.display_data(data)
+    });
+}
+
 // function updateData(map, path_to_data) {
-//   let data = []
-//   d3.csv(path_to_data, function(csv) {
-//     })
-//     .then(() => {
-//       map.display_data(data)
-//     });
+//   d3.csv(path_to_data).then(function(data) {
+//     map.display_data(data)
+//   });
 // }
 
-function updateData(map, path_to_data) {
-  d3.csv(path_to_data).then(function(data) {
-    map.display_data(data)
-  });
-}
+var cluster_filter = -0.1
+var degree_filter = -1
+
 
 class Map {
   constructor() {
@@ -53,58 +59,90 @@ class Map {
   // used to display airports as circles (needs modification, e.g. different colors for different types or airports)
   // may also need another function to display routes between airports
   display_data(data) {
-
+    
     this.main_data = data
 
     const context = this;
     
-    let dataPoints = this.circles.selectAll('circle').data(data, d => d);
+    let filter_data = []
 
+    console.log(data[0])
 
+    if(degree_filter == -1) {
+      filter_data = data
+    } else {
+      data.forEach( function(d) { 
+        if(parseInt(d.degree) >= parseInt(degree_filter) && degree_filter != -1) {
+          filter_data.push(d)
+        } 
+      });  
+    }
+
+    let dataPoints = this.circles.selectAll('circle').data(filter_data, d => d);
 
     dataPoints
       .enter().append('circle')
       .attr('cx', d => context.projection([d.lon, d.lat])[0])
       .attr('cy', d => context.projection([d.lon, d.lat])[1])
-      .attr('r', d => 2)
+      .attr('r', d => 1.5)
       .attr('transform', context.transform)
       .attr('opacity', 0)
+
       .on("click", function(d){
-        console.log("clickclickclickclickclickclick")
+        console.log("click click")
       })
+
       .on("mouseover", function(d){
-        console.log(d.IATA, d.country)
+        var d_json = JSON.stringify(d, null, 2);
+        d3.select('#hover_airport_content')
+          .style('opacity', 1)
+          .text(d_json)
       })
+
       .on("mouseout", function(d){
-        console.log("leave")
+        d3.select('#hover_airport_content')
+        .text("")
       })
+      
       .attr('fill',function(d){
-        switch(d.continent) {
-          case "Europe":
-            return "orange"
-          case "North America":
-            return "skyblue"
-          case "South America":
-            return "lightyellow"
-          case "Asia":
-            return "white"
-          case "Antactica":
-            return "white"
-          case "Oceania":
-            return "red"
-          case "Africa":
-            return "lime"
-          default:
-            "grey"
-        }
-        return "yellow"
+
+        // if(parseInt(d.degree) >= parseInt(degree_filter) && degree_filter != -1) {
+        //   dataPoints.attr('r', d => 6)
+        //   return "red"
+        // } 
+
+         if(parseFloat(d.cluster_coefficient) <= parseFloat(cluster_filter) && cluster_filter != -0.1) {
+           return "red"
+         }
+
+        if(d3.select("#continent_labels_radio").property("checked")){
+					switch(d.continent) {
+            case "Europe":
+              return "SLATEBLUE"
+            case "North America":
+              return "PURPLE"
+            case "South America":
+              return "AQUAMARINE"
+            case "Asia":
+              return "GOLD"
+            case "Antactica":
+              return "white"
+            case "Oceania":
+              return "SANDYBROWN"
+            case "Africa":
+              return "OLIVE"
+            default:
+              "grey"
+          }
+				} else {
+					return "white"			
+				}	
       })
       .transition()
       .duration(1000)
       .attr('opacity', 1)
 
       
-
     dataPoints
       .transition()
       .duration(1000)
@@ -183,6 +221,23 @@ whenDocumentLoaded(() => {
   
   updateData(map, "./data/airports.csv")
 
+  d3.select("#continent_labels_radio").on("change", function(){
+    updateData(map, "./data/airports.csv")
+  });
+
+  d3.select("#cluster_range").on("change", function(){
+    if(this.value == -0.1) {document.getElementById("cluster_range_text").innerHTML = "OFF"}
+    else {document.getElementById("cluster_range_text").innerHTML = this.value;}
+    cluster_filter = this.value
+    updateData(map, "./data/airports.csv")
+  });
+
+  d3.select("#degree_range").on("change", function(){
+    if(this.value == -1) {document.getElementById("degree_range_text").innerHTML = "OFFLINE"}
+    else {document.getElementById("degree_range_text").innerHTML = this.value;}
+    degree_filter = this.value
+    updateData(map, "./data/airports.csv")
+  });
 
   // insert data path here (maybe need to load multiple csv files so modify accordingly)
   d3.csv("", function(data) {
@@ -255,6 +310,9 @@ whenDocumentLoaded(() => {
     });
 
   function zoomed() {
+    console.log("move")
+    //map.display_data(map.main_data)
+
     map.land
       .selectAll('path') // To prevent stroke width from scaling
       .attr('transform', d3.event.transform);
@@ -264,7 +322,7 @@ whenDocumentLoaded(() => {
       .attr('transform', d3.event.transform);
 
     map.circles
-      .selectAll('polygon') // To prevent stroke width from scaling
+      .selectAll('circle') // To prevent stroke width from scaling
       .attr('transform', d3.event.transform);
 
     map.transform = d3.event.transform

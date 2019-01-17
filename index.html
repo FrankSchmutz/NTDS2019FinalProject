@@ -9,9 +9,13 @@
 	<meta name="theme-color" content="#ffffff">
 	<title>NTDS 2019 Air Traffic Map</title>
 	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="radiobtn.css">
 </head>
 
 <body>
+
+
+
 	<div id="header">
 		<p>NTDS 2019 Air Traffic Map</p>
 	</div>
@@ -22,9 +26,30 @@
 			</g>
 		</svg>
 	</div>
-
 		<div id="mouse_region" unselectable="on" class="unselectable"></div>
-	</div>>
+	</div>
+
+	<div id="hover_airport_region" class="">
+
+		<p>Continent labels</p>
+		<input type="checkbox" id="continent_labels_radio" name="checkbox" value="value">
+	
+		<p>Cluster range</p>
+		<input type="range" id="cluster_range" min="-0.1" max="1" step ="0.1" value="-0.1"></br>
+		<label id="cluster_range_text"></label>
+
+		<p>Degree range</p>
+		<input type="range" id="degree_range" min="-1" max="600" step ="1" value="-1"></br>
+		<label id="degree_range_text"></label>
+
+		<div>--------------------</div>
+		
+		<br>
+		<pre id="hover_airport_content">
+			<pre id="json"></pre>
+		</pre>
+	</div>
+	
 
 	<script src="lib/d3.min.js"></script>
 	<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
